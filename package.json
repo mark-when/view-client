@@ -1,0 +1,25 @@
+{
+  "name": "@markwhen/view-client",
+  "version": "1.0.0",
+  "description": "Utility for a markwhen view to communicate with hosting app",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rob Koch",
+  "license": "MIT",
+  "dependencies": {
+    "@markwhen/parser": "^0.4.9"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  },
+  "keywords": [
+    "markwhen",
+    "timeline"
+  ],
+  "files": [
+    "lib/**/*"
+  ]
+}
