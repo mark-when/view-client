@@ -4,10 +4,10 @@
   "type": "module",
   "description": "Utility for a markwhen view to communicate with hosting app",
   "main": ".dist/view-client.umd.js",
-  "module": "./dist/view-client.mjs",
+  "module": "./dist/view-client.js",
   "exports": {
     ".": {
-      "import": "./dist/view-client.mjs",
+      "import": "./dist/view-client.js",
       "require": "./dist/view-client.umd.js"
     }
   },
