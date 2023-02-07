@@ -1,8 +1,16 @@
 {
   "name": "@markwhen/view-client",
   "version": "1.0.1",
+  "type": "module",
   "description": "Utility for a markwhen view to communicate with hosting app",
-  "main": "dist/index.js",
+  "main": ".dist/view-client.umd.js",
+  "module": "./dist/view-client.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/view-client.mjs",
+      "require": "./dist/view-client.umd.js"
+    }
+  },
   "scripts": {
     "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
