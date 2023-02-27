@@ -1,24 +1,16 @@
 {
   "name": "@markwhen/view-client",
-  "version": "1.0.2",
-  "type": "module",
+  "version": "1.0.6",
   "description": "Utility for a markwhen view to communicate with hosting app",
-  "main": ".dist/view-client.umd.js",
-  "module": "./dist/view-client.js",
-  "exports": {
-    ".": {
-      "import": "./dist/view-client.js",
-      "require": "./dist/view-client.umd.js"
-    }
-  },
+  "main": "dist/index.js",
   "scripts": {
-    "build": "vite build",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rob Koch",
   "license": "MIT",
   "dependencies": {
-    "@markwhen/parser": "^0.4.9"
+    "@markwhen/parser": "^0.5.1"
   },
   "devDependencies": {
     "@types/node": "^18.13.0",
