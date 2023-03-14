@@ -98,7 +98,7 @@ type MessageListeners = {
 };
 
 const post = <T extends MessageType>(message: Message<T>) =>
-  window && window.parent.postMessage(message, "*");
+  typeof window !== "undefined" && window.parent.postMessage(message, "*");
 
 export const useLpc = (listeners?: MessageListeners) => {
   const calls: Map<
@@ -131,26 +131,28 @@ export const useLpc = (listeners?: MessageListeners) => {
     params?: MessageParam<T>
   ) => post<T>({ type, response: true, id, params });
 
-  window?.addEventListener(
-    "message",
-    <T extends keyof MessageTypes>(e: MessageEvent<Message<T>>) => {
-      if (!e.data.id || !e.data.id.startsWith("markwhen")) {
-        return;
+  if (typeof window !== "undefined") {
+    window?.addEventListener(
+      "message",
+      <T extends keyof MessageTypes>(e: MessageEvent<Message<T>>) => {
+        if (!e.data.id || !e.data.id.startsWith("markwhen")) {
+          return;
+        }
+        const data = e.data;
+        if (data.response) {
+          calls.get(data.id)?.resolve(data);
+          calls.delete(data.id);
+        } else if (data.request) {
+          const result = listeners?.[data.type]?.(data.params!);
+          Promise.resolve(result).then((resp) => {
+            postResponse(data.id, data.type, resp);
+          });
+        } else {
+          console.error("Not a request or response", data);
+        }
       }
-      const data = e.data;
-      if (data.response) {
-        calls.get(data.id)?.resolve(data);
-        calls.delete(data.id);
-      } else if (data.request) {
-        const result = listeners?.[data.type]?.(data.params!);
-        Promise.resolve(result).then((resp) => {
-          postResponse(data.id, data.type, resp);
-        });
-      } else {
-        console.error("Not a request or response", data);
-      }
-    }
-  );
+    );
+  }
 
   return { postRequest };
 };
