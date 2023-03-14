@@ -98,7 +98,7 @@ type MessageListeners = {
 };
 
 const post = <T extends MessageType>(message: Message<T>) =>
-  window.parent.postMessage(message, "*");
+  window && window.parent.postMessage(message, "*");
 
 export const useLpc = (listeners?: MessageListeners) => {
   const calls: Map<
@@ -131,7 +131,7 @@ export const useLpc = (listeners?: MessageListeners) => {
     params?: MessageParam<T>
   ) => post<T>({ type, response: true, id, params });
 
-  window.addEventListener(
+  window?.addEventListener(
     "message",
     <T extends keyof MessageTypes>(e: MessageEvent<Message<T>>) => {
       if (!e.data.id || !e.data.id.startsWith("markwhen")) {

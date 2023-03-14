@@ -1,6 +1,6 @@
 {
   "name": "@markwhen/view-client",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Utility for a markwhen view to communicate with hosting app",
   "main": "dist/index.js",
   "scripts": {
