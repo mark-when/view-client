@@ -152,6 +152,12 @@ export const useLpc = (listeners?: MessageListeners) => {
         }
       }
     );
+
+    // @ts-ignore
+    const initialState = window.__markwhen_initial_state as State | undefined;
+    if (initialState && listeners && listeners.state) {
+       listeners.state(initialState);
+    }
   }
 
   return { postRequest };
