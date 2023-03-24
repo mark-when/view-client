@@ -135,7 +135,11 @@ export const useLpc = (listeners?: MessageListeners) => {
     window?.addEventListener(
       "message",
       <T extends keyof MessageTypes>(e: MessageEvent<Message<T>>) => {
-        if (!e.data.id || !e.data.id.startsWith("markwhen")) {
+        if (
+          !e.data.id ||
+          !e.data.id.startsWith("markwhen") ||
+          e.source === window
+        ) {
           return;
         }
         const data = e.data;
@@ -156,7 +160,7 @@ export const useLpc = (listeners?: MessageListeners) => {
     // @ts-ignore
     const initialState = window.__markwhen_initial_state as State | undefined;
     if (initialState && listeners && listeners.state) {
-       listeners.state(initialState);
+      listeners.state(initialState);
     }
   }
 
