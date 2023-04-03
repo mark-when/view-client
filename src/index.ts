@@ -97,9 +97,6 @@ type MessageListeners = {
   ) => any;
 };
 
-const post = <T extends MessageType>(message: Message<T>) =>
-  typeof window !== "undefined" && window.parent.postMessage(message, "*");
-
 export const useLpc = (listeners?: MessageListeners) => {
   const calls: Map<
     string,
@@ -108,6 +105,26 @@ export const useLpc = (listeners?: MessageListeners) => {
       reject: (a: any) => void;
     }
   > = new Map();
+
+  // @ts-ignore
+  const wssUrl = window.__markwhen_wss_url as string | undefined;
+  let socket: WebSocket | undefined;
+  let hasConnected = false;
+  if (wssUrl) {
+    socket = new WebSocket(wssUrl);
+    socket.onopen = () => {
+      hasConnected = true;
+      postRequest("state");
+    };
+  }
+
+  const post = <T extends MessageType>(message: Message<T>) => {
+    if (socket && hasConnected) {
+      socket.send(JSON.stringify(message));
+    } else if (typeof window !== "undefined") {
+      window.parent.postMessage(message, "*");
+    }
+  };
 
   const postRequest = <T extends MessageType>(
     type: T,
@@ -131,31 +148,39 @@ export const useLpc = (listeners?: MessageListeners) => {
     params?: MessageParam<T>
   ) => post<T>({ type, response: true, id, params });
 
-  if (typeof window !== "undefined") {
-    window?.addEventListener(
-      "message",
-      <T extends keyof MessageTypes>(e: MessageEvent<Message<T>>) => {
-        if (
-          !e.data.id ||
-          !e.data.id.startsWith("markwhen") ||
-          e.source === window
-        ) {
-          return;
-        }
-        const data = e.data;
-        if (data.response) {
-          calls.get(data.id)?.resolve(data);
-          calls.delete(data.id);
-        } else if (data.request) {
-          const result = listeners?.[data.type]?.(data.params!);
-          Promise.resolve(result).then((resp) => {
-            postResponse(data.id, data.type, resp);
-          });
-        } else {
-          console.error("Not a request or response", data);
-        }
-      }
-    );
+  const messageListener = <T extends keyof MessageTypes>(
+    e: MessageEvent<Message<T>>
+  ) => {
+    if (
+      !e.data.id ||
+      !e.data.id.startsWith("markwhen") ||
+      e.source === window
+    ) {
+      return;
+    }
+    const data = e.data;
+    if (data.response) {
+      calls.get(data.id)?.resolve(data);
+      calls.delete(data.id);
+    } else if (data.request) {
+      const result = listeners?.[data.type]?.(data.params!);
+      Promise.resolve(result).then((resp) => {
+        postResponse(data.id, data.type, resp);
+      });
+    } else {
+      console.error("Not a request or response", data);
+    }
+  };
+
+  if (socket) {
+    socket.onmessage = (event) => {
+      const messageClone = new MessageEvent("message", {
+        data: JSON.parse(event.data),
+      });
+      messageListener(messageClone);
+    };
+  } else if (typeof window !== "undefined") {
+    window?.addEventListener("message", messageListener);
 
     // @ts-ignore
     const initialState = window.__markwhen_initial_state as State | undefined;
