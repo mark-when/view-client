@@ -3,3 +3,5 @@ dist/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+tests/test.spec.ts
+tests-examples/demo-todo-app.spec.ts
