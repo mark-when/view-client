@@ -106,8 +106,10 @@ export const useLpc = (listeners?: MessageListeners) => {
     }
   > = new Map();
 
-  // @ts-ignore
-  const wssUrl = window.__markwhen_wss_url as string | undefined;
+  const wssUrl =
+    typeof window !== "undefined" &&
+    // @ts-ignore
+    (window.__markwhen_wss_url as string | undefined);
   let socket: WebSocket | undefined;
   let hasConnected = false;
   if (wssUrl) {
@@ -181,12 +183,14 @@ export const useLpc = (listeners?: MessageListeners) => {
     };
   } else if (typeof window !== "undefined") {
     window?.addEventListener("message", messageListener);
+  }
 
+  const initialState =
+    typeof window !== "undefined" &&
     // @ts-ignore
-    const initialState = window.__markwhen_initial_state as State | undefined;
-    if (initialState && listeners && listeners.state) {
-      listeners.state(initialState);
-    }
+    (window.__markwhen_initial_state as State | undefined);
+  if (initialState && listeners && listeners.state) {
+    listeners.state(initialState);
   }
 
   return { postRequest };
