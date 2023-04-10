@@ -22,7 +22,6 @@ export interface AppState {
   isDark?: boolean;
   hoveringPath?: EventPaths;
   detailPath?: EventPath;
-  pageIndex: number;
 }
 export interface MarkwhenState {
   rawText?: string;
