@@ -27,10 +27,6 @@ export interface AppState {
 export interface MarkwhenState {
   rawText?: string;
   parsed: Timeline[];
-  page: PageState;
-}
-export interface PageState {
-  parsed?: Timeline;
   transformed?: Node<NodeArray>;
 }
 export interface State {
