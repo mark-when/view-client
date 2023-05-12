@@ -22,6 +22,7 @@ export interface AppState {
   isDark?: boolean;
   hoveringPath?: EventPaths;
   detailPath?: EventPath;
+  colorMap: Record<string, string>;
 }
 export interface MarkwhenState {
   rawText?: string;

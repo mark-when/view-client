@@ -15,6 +15,10 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+### 1.2.1
+- Bump parser (0.8.1)
+- Add colorMap to appState
+
 ### 1.1.1
 - Use initially set state even if we have a socket connection
 
