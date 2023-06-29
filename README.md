@@ -15,6 +15,10 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+### 1.3.0
+- Bump parser (0.9.1)
+- Support for imports
+
 ### 1.2.1
 - Bump parser (0.8.1)
 - Add colorMap to appState

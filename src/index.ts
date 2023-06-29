@@ -5,7 +5,7 @@ import type {
   DateTimeGranularity,
   Timeline,
 } from "@markwhen/parser/lib/Types";
-import type { EventPath, EventPaths } from "./paths";
+import type { EventPath } from "./paths";
 
 export type DisplayScale =
   | "second"
@@ -20,9 +20,9 @@ export type DisplayScale =
 
 export interface AppState {
   isDark?: boolean;
-  hoveringPath?: EventPaths;
+  hoveringPath?: EventPath
   detailPath?: EventPath;
-  colorMap: Record<string, string>;
+  colorMap: Record<string, Record<string, string>>;
 }
 export interface MarkwhenState {
   rawText?: string;
