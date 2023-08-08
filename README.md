@@ -15,6 +15,9 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+### 1.4.0
+- Separate state into appState and markwhenState instead of sending both at the same time
+
 ### 1.3.0
 - Bump parser (0.9.1)
 - Support for imports
