@@ -6,8 +6,12 @@
 import { useLpc } from "@markwhen/view-client"
 
 const { postRequest } = useLpc({
-  state(newState) {
+  markwhenState(ms) {
     // When there is some state change from the editor
+    console.log(ms)
+  }
+  appState(newState) {
+    // When the app state changes (dark mode, hovering event, selected event, etc)
     console.log(newState)
   }
 })
