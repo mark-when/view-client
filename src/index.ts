@@ -20,7 +20,7 @@ export type DisplayScale =
 
 export interface AppState {
   isDark?: boolean;
-  hoveringPath?: EventPath
+  hoveringPath?: EventPath;
   detailPath?: EventPath;
   colorMap: Record<string, Record<string, string>>;
 }
@@ -29,13 +29,10 @@ export interface MarkwhenState {
   parsed: Timeline[];
   transformed?: Node<NodeArray>;
 }
-export interface State {
-  app: AppState;
-  markwhen: MarkwhenState;
-}
 
 interface MessageTypes {
-  state: State;
+  appState: AppState;
+  markwhenState: MarkwhenState;
   setHoveringPath: EventPath;
   setDetailPath: EventPath;
   setText: {
@@ -112,7 +109,8 @@ export const useLpc = (listeners?: MessageListeners) => {
     socket = new WebSocket(wssUrl);
     socket.onopen = () => {
       hasConnected = true;
-      postRequest("state");
+      postRequest("appState");
+      postRequest("markwhenState");
     };
   }
 
@@ -185,8 +183,8 @@ export const useLpc = (listeners?: MessageListeners) => {
     typeof window !== "undefined" &&
     // @ts-ignore
     (window.__markwhen_initial_state as State | undefined);
-  if (initialState && listeners && listeners.state) {
-    listeners.state(initialState);
+  if (initialState && listeners && listeners.markwhenState) {
+    listeners.markwhenState(initialState);
   }
 
   return { postRequest };
