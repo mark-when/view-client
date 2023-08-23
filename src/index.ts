@@ -117,8 +117,10 @@ export const useLpc = (listeners?: MessageListeners) => {
   const post = <T extends MessageType>(message: Message<T>) => {
     if (socket && hasConnected) {
       socket.send(JSON.stringify(message));
-    } else if (typeof window !== "undefined") {
+    } else if (typeof window !== "undefined" && typeof window.parent !== 'undefined') {
       window.parent.postMessage(message, "*");
+    } else {
+      console.error("Nothing to post to")
     }
   };
 
