@@ -19,6 +19,10 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+## 1.4.4
+
+- Error if nothing to post to
+
 ### 1.4.0
 - Separate state into appState and markwhenState instead of sending both at the same time
 
