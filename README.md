@@ -19,7 +19,11 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
-## 1.4.4
+## 1.4.2
+
+- VS code support
+
+## 1.4.1
 
 - Error if nothing to post to
 
