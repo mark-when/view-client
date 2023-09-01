@@ -7,6 +7,10 @@ import type {
 } from "@markwhen/parser/lib/Types";
 import type { EventPath } from "./paths";
 
+declare const acquireVsCodeApi:
+  | (() => { postMessage: (message: any) => void })
+  | undefined;
+
 export type DisplayScale =
   | "second"
   | "quarterminute"
