@@ -19,6 +19,11 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+## 1.4.3
+
+- Bump parser
+- Add close function to close sockets and/or remove event listeners
+
 ## 1.4.2
 
 - VS code support

@@ -1,10 +1,10 @@
-import type { Node, NodeArray } from "@markwhen/parser/lib/Node";
+import type { Node, NodeArray } from "@markwhen/parser";
 import type {
   DateFormat,
   DateRangeIso,
   DateTimeGranularity,
   Timeline,
-} from "@markwhen/parser/lib/Types";
+} from "@markwhen/parser";
 import type { EventPath } from "./paths";
 
 declare const acquireVsCodeApi:
