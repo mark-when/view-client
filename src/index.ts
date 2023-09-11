@@ -207,5 +207,15 @@ export const useLpc = (listeners?: MessageListeners) => {
     listeners.markwhenState(initialState);
   }
 
-  return { postRequest };
+  /// Removes all listeners (if applicable) and closes socket connections (if applicable)
+  const close = () => {
+    if (socket) {
+      socket.close();
+    }
+    if (window) {
+      window.removeEventListener("message", messageListener);
+    }
+  };
+
+  return { postRequest, close };
 };
