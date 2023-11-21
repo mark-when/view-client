@@ -19,6 +19,10 @@ const { postRequest } = useLpc({
 
 ## Changelog
 
+## 1.4.4
+
+- Bump deps
+
 ## 1.4.3
 
 - Bump parser
