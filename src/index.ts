@@ -5,6 +5,7 @@ import type {
   Event,
   EventGroup,
   Eventy,
+  ParseResult,
   Timeline,
 } from "@markwhen/parser";
 import type { EventPath } from "./paths";
@@ -37,8 +38,8 @@ export interface AppState {
 }
 export interface MarkwhenState {
   rawText?: string;
-  parsed: Timeline;
-  transformed?: EventGroup;
+  parsed: ParseResult;
+  transformed?: Sourced<EventGroup>;
 }
 
 interface MessageTypes {
