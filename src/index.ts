@@ -1,8 +1,10 @@
-import type { Node, NodeArray } from "@markwhen/parser";
 import type {
   DateFormat,
   DateRangeIso,
   DateTimeGranularity,
+  Event,
+  EventGroup,
+  Eventy,
   Timeline,
 } from "@markwhen/parser";
 import type { EventPath } from "./paths";
@@ -22,6 +24,11 @@ export type DisplayScale =
   | "year"
   | "decade";
 
+export type Source = string;
+export type Sourced<T extends Eventy> = T extends Event
+  ? T & { source?: Source }
+  : T & { source?: Source; children: Array<Sourced<Eventy>> };
+
 export interface AppState {
   isDark?: boolean;
   hoveringPath?: EventPath;
@@ -30,8 +37,8 @@ export interface AppState {
 }
 export interface MarkwhenState {
   rawText?: string;
-  parsed: Timeline[];
-  transformed?: Node<NodeArray>;
+  parsed: Timeline;
+  transformed?: EventGroup;
 }
 
 interface MessageTypes {
