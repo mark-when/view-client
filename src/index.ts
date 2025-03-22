@@ -6,7 +6,6 @@ import type {
   EventGroup,
   Eventy,
   ParseResult,
-  Timeline,
 } from "@markwhen/parser";
 import type { EventPath } from "./paths";
 
