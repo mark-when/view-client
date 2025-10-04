@@ -30,6 +30,7 @@ export type Sourced<T extends Eventy> = T extends Event
   : T & { source?: Source; children: Array<Sourced<Eventy>> };
 
 export interface AppState {
+  key?: string;
   isDark?: boolean;
   hoveringPath?: EventPath;
   detailPath?: EventPath;
