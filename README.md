@@ -14,10 +14,25 @@ const { postRequest } = useLpc({
     // When the app state changes (dark mode, hovering event, selected event, etc)
     console.log(newState)
   }
+}, {
+  // Proxy all keystrokes by default; override specific combos when you want
+  // to handle them inside the view instead of the parent window
+  keystrokeOverrides: [
+    { combo: "meta+k", action: "skip" },
+    { combo: "ctrl+p", action: "proxy" }
+  ],
+  // Prevent default in the iframe when proxying (default: true)
+  preventDefaultOnProxy: true
 })
 ```
 
 ## Changelog
+
+## 1.6.0
+
+- Proxy keydown events to the parent window by default
+- Prevent default on proxied keydown events by default (configurable via `preventDefaultOnProxy`)
+- Allow opt-out or forced proxying for specific key combinations via `keystrokeOverrides`
 
 ## 1.4.4
 

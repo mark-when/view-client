@@ -5,6 +5,7 @@ import type {
   Event,
   EventGroup,
   Eventy,
+  Path,
   ParseResult,
 } from "@markwhen/parser";
 import type { EventPath } from "./paths";
@@ -26,14 +27,15 @@ export type DisplayScale =
 
 export type Source = string;
 export type Sourced<T extends Eventy> = T extends Event
-  ? T & { source?: Source }
-  : T & { source?: Source; children: Array<Sourced<Eventy>> };
+  ? T & { source?: Source; originalPath?: Path }
+  : T & { source?: Source; originalPath?: Path; children: Array<Sourced<Eventy>> };
 
 export interface AppState {
   key?: string;
   isDark?: boolean;
   hoveringPath?: EventPath;
   detailPath?: EventPath;
+  path?: string;
   colorMap: Record<string, Record<string, string>>;
 }
 export interface MarkwhenState {
@@ -42,7 +44,34 @@ export interface MarkwhenState {
   transformed?: Sourced<EventGroup>;
 }
 
-interface MessageTypes {
+export type KeystrokeAction = "proxy" | "skip";
+
+export interface KeystrokeOverride {
+  combo: string;
+  action: KeystrokeAction;
+}
+
+export interface KeystrokePayload {
+  combo: string;
+  key: string;
+  code: string;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+  repeat: boolean;
+  location: number;
+  type: "keydown" | "keyup";
+}
+
+export interface UseLpcOptions {
+  proxyKeystrokes?: boolean;
+  keystrokeOverrides?: KeystrokeOverride[];
+  preventDefaultOnProxy?: boolean;
+  initialAppStateFromMarkwhen?: (state: MarkwhenState) => Partial<AppState>;
+}
+
+type BaseMessageTypes = {
   appState: AppState;
   markwhenState: MarkwhenState;
   setHoveringPath: EventPath;
@@ -72,12 +101,11 @@ interface MessageTypes {
   jumpToRange: {
     dateRangeIso: DateRangeIso;
   };
-}
+  keystroke: KeystrokePayload;
+};
 
-type PossibleMessages = MessageTypes;
-
-type MessageType = keyof PossibleMessages;
-type MessageParam<T extends keyof PossibleMessages> = PossibleMessages[T];
+type MessageType = keyof BaseMessageTypes;
+type MessageParam<T extends keyof BaseMessageTypes> = BaseMessageTypes[T];
 
 export interface Message<T extends MessageType> {
   type: T;
@@ -97,12 +125,45 @@ export const getNonce = () => {
 };
 
 type MessageListeners = {
-  [Property in keyof PossibleMessages]?: (
-    event: PossibleMessages[Property]
+  [Property in keyof BaseMessageTypes]?: (
+    event: BaseMessageTypes[Property]
   ) => any;
 };
 
-export const useLpc = (listeners?: MessageListeners) => {
+const normalizeCombo = (combo: string) =>
+  combo
+    .split("+")
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean)
+    .join("+");
+
+const comboFromEvent = (event: KeyboardEvent) => {
+  const segments: string[] = [];
+  if (event.metaKey) {
+    segments.push("meta");
+  }
+  if (event.ctrlKey) {
+    segments.push("ctrl");
+  }
+  if (event.altKey) {
+    segments.push("alt");
+  }
+  if (event.shiftKey) {
+    segments.push("shift");
+  }
+  segments.push(event.key.toLowerCase());
+  return segments.join("+");
+};
+
+const hasParentWindow = () =>
+  typeof window !== "undefined" &&
+  typeof window.parent !== "undefined" &&
+  window.parent !== window.self;
+
+export const useLpc = (
+  listeners?: MessageListeners,
+  options?: UseLpcOptions
+) => {
   const calls: Map<
     string,
     {
@@ -110,6 +171,13 @@ export const useLpc = (listeners?: MessageListeners) => {
       reject: (a: any) => void;
     }
   > = new Map();
+
+  const proxyKeystrokes = options?.proxyKeystrokes ?? true;
+  const preventDefaultOnProxy = options?.preventDefaultOnProxy ?? true;
+  const keystrokeOverrides = new Map<string, KeystrokeAction>();
+  options?.keystrokeOverrides?.forEach(({ combo, action }) => {
+    keystrokeOverrides.set(normalizeCombo(combo), action);
+  });
 
   const wssUrl =
     typeof window !== "undefined" &&
@@ -172,7 +240,7 @@ export const useLpc = (listeners?: MessageListeners) => {
     params?: MessageParam<T>
   ) => post<T>({ type, response: true, id, params });
 
-  const messageListener = <T extends keyof MessageTypes>(
+  const messageListener = <T extends MessageType>(
     e: MessageEvent<Message<T>>
   ) => {
     if (
@@ -207,12 +275,81 @@ export const useLpc = (listeners?: MessageListeners) => {
     window?.addEventListener("message", messageListener);
   }
 
+  const shouldProxyKeystroke = (event: KeyboardEvent) => {
+    if (!proxyKeystrokes) {
+      return false;
+    }
+    const combo = comboFromEvent(event);
+    const override = keystrokeOverrides.get(combo);
+    if (override === "proxy") {
+      return true;
+    }
+    if (override === "skip") {
+      return false;
+    }
+    return true;
+  };
+
+  const keystrokeListener = (event: KeyboardEvent) => {
+    if (!shouldProxyKeystroke(event)) {
+      return;
+    }
+
+    if (preventDefaultOnProxy && event.cancelable) {
+      event.preventDefault();
+    }
+
+    if (socket && !hasConnected) {
+      return;
+    }
+
+    const canPostToParent =
+      (socket && hasConnected) ||
+      typeof acquireVsCodeApi !== "undefined" ||
+      hasParentWindow();
+
+    if (!canPostToParent) {
+      return;
+    }
+
+    const combo = comboFromEvent(event);
+    const payload: KeystrokePayload = {
+      combo,
+      key: event.key,
+      code: event.code,
+      altKey: event.altKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      shiftKey: event.shiftKey,
+      repeat: event.repeat,
+      location: event.location,
+      type: event.type as "keydown" | "keyup",
+    };
+
+    post({
+      type: "keystroke",
+      request: true,
+      id: `markwhen_${getNonce()}`,
+      params: payload,
+    });
+  };
+
+  if (typeof window !== "undefined" && proxyKeystrokes) {
+    window.addEventListener("keydown", keystrokeListener);
+  }
+
   const initialState =
     typeof window !== "undefined" &&
     // @ts-ignore
     (window.__markwhen_initial_state as State | undefined);
   if (initialState && listeners && listeners.markwhenState) {
-    listeners.markwhenState(initialState);
+    const state = initialState as MarkwhenState;
+    listeners.markwhenState(state);
+    const appStateFromInitial =
+      options?.initialAppStateFromMarkwhen?.(state);
+    if (appStateFromInitial && listeners.appState) {
+      listeners.appState(appStateFromInitial as AppState);
+    }
   }
 
   /// Removes all listeners (if applicable) and closes socket connections (if applicable)
@@ -222,6 +359,9 @@ export const useLpc = (listeners?: MessageListeners) => {
     }
     if (window) {
       window.removeEventListener("message", messageListener);
+      if (proxyKeystrokes) {
+        window.removeEventListener("keydown", keystrokeListener);
+      }
     }
   };
 
