@@ -11,7 +11,7 @@
   "author": "Rob Koch",
   "license": "MIT",
   "dependencies": {
-    "@markwhen/parser": "^0.16.8"
+    "@markwhen/parser": "^1.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.32.1",
